@@ -63,6 +63,10 @@ p.t = 0.2
 p.c = 0.3
 n = 200
 S = 50
+
+power.prop.test(n = 100, p1 = .3, p2 = .2, sig.level = 0.05, 
+                alternative = "two.sided")
+
 simulationSettingName = "test"
 
 trial.sim = function(p.t, p.c, n, S, simulationSettingName, boundary1 = 0.005, boundary2 = 0.048){
@@ -84,6 +88,7 @@ trial.sim = function(p.t, p.c, n, S, simulationSettingName, boundary1 = 0.005, b
     T.1 = ifelse(prop.test(x = c(p.11, p.12), n = c(n/4, n/4))$p.value<boundary1,
                  1, 0)
     # using the O'Brien-Fleming boundary
+    # 1 for rejecting the null, 0 for failing to reject the null.
     if(T.1 == 0){
       # if we fail to reject the null during the interim analysis:
       p.21 = p.11 + sum(rbinom(n/4, 1, prob = p.c))
