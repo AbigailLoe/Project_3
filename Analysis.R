@@ -1,6 +1,6 @@
 ##### Game Plan ####
 # Decide deltas/hypothesis situations to test
-# Decide correct n
+# This will allow us to decide correct n
 # determine ideal number of simulations
 # run simulations
 # win.
