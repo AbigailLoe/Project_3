@@ -65,7 +65,7 @@ n = 200
 S = 50
 simulationSettingName = "test"
 
-trial.sim = function(p.t, p.c, n, S, simulationSettingName){
+trial.sim = function(p.t, p.c, n, S, simulationSettingName, boundary1 = 0.005, boundary2 = 0.048){
   # p.t is proportion of successes we see on treatment
   # p.c is proprotion fo successes we see on control.
   # n is the total number of people that we need to enroll across 
@@ -81,7 +81,7 @@ trial.sim = function(p.t, p.c, n, S, simulationSettingName){
     p.11 = sum(rbinom(n/4, 1, prob = p.c))
     #get number of success for the treatment
     p.12 = sum(rbinom(n/4, 1, prob = p.t))
-    T.1 = ifelse(prop.test(x = c(p.11, p.12), n = c(n/4, n/4))$p.value<0.005,
+    T.1 = ifelse(prop.test(x = c(p.11, p.12), n = c(n/4, n/4))$p.value<boundary1,
                  1, 0)
     # using the O'Brien-Fleming boundary
     if(T.1 == 0){
@@ -89,7 +89,7 @@ trial.sim = function(p.t, p.c, n, S, simulationSettingName){
       p.21 = p.11 + sum(rbinom(n/4, 1, prob = p.c))
       p.22 = p.12 + sum(rbinom(n/4, 1, prob = p.t))
       overall.n = n
-      T.2 = ifelse(prop.test(x = c(p.21, p.22), n = c(n/2, n/2))$p.value<0.048,
+      T.2 = ifelse(prop.test(x = c(p.21, p.22), n = c(n/2, n/2))$p.value<boundary2,
                    1, 0)
     }else{
       #rejected the null, found a difference in the interim analysis:
