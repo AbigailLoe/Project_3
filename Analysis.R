@@ -59,7 +59,11 @@ power.prop.test(n= NULL, p1 = 0.15, p2 = 0.3,
 
 
 
-
+p.t = 0.2
+p.c = 0.3
+n = 200
+S = 50
+simulationSettingName = "test"
 
 trial.sim = function(p.t, p.c, n, S, simulationSettingName){
   # p.t is proportion of successes we see on treatment
@@ -68,9 +72,9 @@ trial.sim = function(p.t, p.c, n, S, simulationSettingName){
   # both arms of the trial
   # S is the number of monte carlo replicates.
   # simulationSetting name is a string that allows us to save the result of the simulation
-  results = matrix(NA, nrow= S, ncol = 8)
+  results = matrix(NA, nrow= S, ncol = 9)
   colnames(results) = c("replicate", "p.11", "p.12", "T.1",
-                        "p.21", "p.22", "T.2", "decision")
+                        "p.21", "p.22", "T.2", "decision", "overall.n")
   for(r in 1:S){
     # interim analysis
     #get number of success for the controls
@@ -79,9 +83,23 @@ trial.sim = function(p.t, p.c, n, S, simulationSettingName){
     p.12 = sum(rbinom(n/4, 1, prob = p.t))
     T.1 = ifelse(prop.test(x = c(p.11, p.12), n = c(n/4, n/4))$p.value<0.005,
                  1, 0)
-    
-    
-    
+    # using the O'Brien-Fleming boundary
+    if(T.1 == 0){
+      # if we fail to reject the null during the interim analysis:
+      p.21 = p.11 + sum(rbinom(n/4, 1, prob = p.c))
+      p.22 = p.12 + sum(rbinom(n/4, 1, prob = p.t))
+      overall.n = n
+      T.2 = ifelse(prop.test(x = c(p.21, p.22), n = c(n/2, n/2))$p.value<0.048,
+                   1, 0)
+    }else{
+      #rejected the null, found a difference in the interim analysis:
+      p.21 = 0
+      p.22 = 0
+      overall.n = n/2
+      T.2 = 0
+    }
+
+  results[r, ] = c(r, p.11, p.12, T.1, p.21, p.22, T.2, T.1+T.2, overall.n)  
   }
 }
 
