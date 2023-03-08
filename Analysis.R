@@ -81,7 +81,7 @@ test1 = trial.sim(p.t = .3, p.c = .15, n=290, S= 1800,
 #how to test the type I error?? given power, we can figure out what the type I
 # error rate is??
 
-trial.sim = function(p.t, p.c, n, S, simulationSettingName, boundary1 = 0.005, boundary2 = 0.048){
+trial.sim = function(p.t, p.c, n, S, simulationSettingName= NA, boundary1 = 0.005, boundary2 = 0.048){
   # p.t is proportion of successes we see on treatment
   # p.c is proprotion fo successes we see on control.
   # n is the total number of people that we need to enroll across 
@@ -117,6 +117,9 @@ trial.sim = function(p.t, p.c, n, S, simulationSettingName, boundary1 = 0.005, b
     }
 
   results[r, ] = c(r, p.11, p.12, T.1, p.21, p.22, T.2, T.1+T.2, overall.n)  
+  }
+  if(!is.na(simulationSettingName)){
+    write.csv(paste0(simulationSettingName, ".csv"))
   }
   return(results)
 }
