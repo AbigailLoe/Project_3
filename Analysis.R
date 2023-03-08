@@ -69,6 +69,18 @@ power.prop.test(n = 100, p1 = .3, p2 = .2, sig.level = 0.05,
 
 simulationSettingName = "test"
 
+test1 = trial.sim(p.t = .3, p.c = .2, n=200, 1800, 0.005, 0.048)
+set.seed(16)
+test1 = trial.sim(p.t = .3, p.c = .2, n=200, S= 1800, 
+                  boundary1 = 0.005, boundary2 = 0.048)
+colMeans(test1[, c("reject", "overall.n")])
+
+test1 = trial.sim(p.t = .3, p.c = .15, n=290, S= 1800, 
+                  boundary1 = 0.01, boundary2 = 0.038)
+
+#how to test the type I error?? given power, we can figure out what the type I
+# error rate is??
+
 trial.sim = function(p.t, p.c, n, S, simulationSettingName, boundary1 = 0.005, boundary2 = 0.048){
   # p.t is proportion of successes we see on treatment
   # p.c is proprotion fo successes we see on control.
@@ -78,7 +90,7 @@ trial.sim = function(p.t, p.c, n, S, simulationSettingName, boundary1 = 0.005, b
   # simulationSetting name is a string that allows us to save the result of the simulation
   results = matrix(NA, nrow= S, ncol = 9)
   colnames(results) = c("replicate", "p.11", "p.12", "T.1",
-                        "p.21", "p.22", "T.2", "decision", "overall.n")
+                        "p.21", "p.22", "T.2", "reject", "overall.n")
   for(r in 1:S){
     # interim analysis
     #get number of success for the controls
@@ -106,5 +118,8 @@ trial.sim = function(p.t, p.c, n, S, simulationSettingName, boundary1 = 0.005, b
 
   results[r, ] = c(r, p.11, p.12, T.1, p.21, p.22, T.2, T.1+T.2, overall.n)  
   }
+  return(results)
 }
+
+
 
