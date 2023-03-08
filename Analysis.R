@@ -12,6 +12,59 @@ S.alpha = (1.96/m)^2 *.95*(1-.95); S.alpha
 # implies we need at least 1537 montecarlo runs.
 
 
+
+
+
+trial.sim = function(p.t, p.c, n, S, simulationSettingName= NA, 
+                     boundary1 = 0.005, boundary2 = 0.048){
+  # p.t is proportion of successes we see on treatment
+  # p.c is proportion of successes we see on control.
+  # n is the total number of people that we need to enroll across 
+  # both arms of the trial
+  # S is the number of monte carlo replicates.
+  # simulationSetting name is a string that allows us to save the result of the simulation
+  results = matrix(NA, nrow= S, ncol = 9)
+  colnames(results) = c("replicate", "p.11", "p.12", "T.1",
+                        "p.21", "p.22", "T.2", "reject", "overall.n")
+  for(r in 1:S){
+    # interim analysis
+    #get number of success for the controls
+    p.11 = sum(rbinom(n/4, 1, prob = p.c))
+    #get number of success for the treatment
+    p.12 = sum(rbinom(n/4, 1, prob = p.t))
+    T.1 = ifelse(suppressWarnings(prop.test(x = c(p.11, p.12), n = c(n/4, n/4)))$p.value<boundary1,
+                 1, 0)
+    # problem with the T.1 being NA right now.
+    # using the O'Brien-Fleming boundary
+    # 1 for rejecting the null, 0 for failing to reject the null.
+    print(T.1)
+    if(T.1 == 0){
+      # if we fail to reject the null during the interim analysis:
+      p.21 = p.11 + sum(rbinom(n/4, 1, prob = p.c))
+      p.22 = p.12 + sum(rbinom(n/4, 1, prob = p.t))
+      
+      overall.n = n
+      T.2 = ifelse(suppressWarnings(prop.test(x = c(p.21, p.22), n = c(n/2, n/2)))$p.value<boundary2,
+                   1, 0)
+    }else{
+      #rejected the null, found a difference in the interim analysis:
+      p.21 = 0
+      p.22 = 0
+      overall.n = n/2
+      T.2 = 0
+    }
+    
+    results[r, ] = c(r, p.11, p.12, T.1, p.21, p.22, T.2, T.1+T.2, overall.n)  
+  }
+  if(!is.na(simulationSettingName)){
+    write.csv(paste0(simulationSettingName, ".csv"))
+  }
+  return(results)
+}
+
+
+
+
 #### Alternative Settings ####
 ######## Setting 1 #########
 #p1 = 0, p2 = .15, sig.level = 0.05, power = 0.80
@@ -21,7 +74,9 @@ power.prop.test(n= NULL, p1 = 0, p2 = 0.15,
 # initial n is 48 in each group, 96 total.
 # this 24 in each group at the interim, 48 total
 
-
+test1 = suppressWarnings( trial.sim(p.t = 0.15, p.c = 0, n = 96, S = 1600, 
+                  boundary1 = 0.005, boundary2 = 0.048 ))
+colMeans(test1[, c("reject", "overall.n")])
 
 
 
@@ -71,58 +126,37 @@ simulationSettingName = "test"
 
 test1 = trial.sim(p.t = .3, p.c = .2, n=200, 1800, 0.005, 0.048)
 set.seed(16)
-test1 = trial.sim(p.t = .3, p.c = .2, n=200, S= 1800, 
+test1 = trial.sim(p.t = .3, p.c = .2, n=400, S= 1800, 
                   boundary1 = 0.005, boundary2 = 0.048)
 colMeans(test1[, c("reject", "overall.n")])
 
-test1 = trial.sim(p.t = .3, p.c = .15, n=290, S= 1800, 
-                  boundary1 = 0.01, boundary2 = 0.038)
+test1 = trial.sim(p.t = .3, p.c = .25, n=390, S= 5000, 
+                  boundary1 = 0.005, boundary2 = 0.025)
+colMeans(test1[, c("reject", "overall.n")])
+
+power.prop.test(n= NULL, p1 = 0, p2 = 0.15,
+                sig.level = 0.05, power= 0.80,
+                alternative = "two.sided")
+
+test1 = trial.sim(p.t = .16, p.c = 0.01, n=48, S= 5000)
+colMeans(test1[, c("reject", "overall.n")])
+
+test1 = trial.sim(p.t = .15, p.c = 0, n=158, S= 5000)
+colMeans(test1[, c("reject", "overall.n")])
+
+test1 = trial.sim(p.t = .15, p.c = .1, n=158, S= 5000)
+colMeans(test1[, c("reject", "overall.n")])
+
+test1 = trial.sim(p.t = .3, p.c = 0.15, n=240, S= 5000, 
+                  boundary1 = 0.01, boundary2 = 0.048)
+colMeans(test1[, c("reject", "overall.n")])
+
+# initial n is 48 in each group, 96 total.
+# this 24 in each group at the interim, 48 total
+
+
+# type I error rate here is inflated.
 
 #how to test the type I error?? given power, we can figure out what the type I
 # error rate is??
-
-trial.sim = function(p.t, p.c, n, S, simulationSettingName= NA, boundary1 = 0.005, boundary2 = 0.048){
-  # p.t is proportion of successes we see on treatment
-  # p.c is proprotion fo successes we see on control.
-  # n is the total number of people that we need to enroll across 
-  # both arms of the trial
-  # S is the number of monte carlo replicates.
-  # simulationSetting name is a string that allows us to save the result of the simulation
-  results = matrix(NA, nrow= S, ncol = 9)
-  colnames(results) = c("replicate", "p.11", "p.12", "T.1",
-                        "p.21", "p.22", "T.2", "reject", "overall.n")
-  for(r in 1:S){
-    # interim analysis
-    #get number of success for the controls
-    p.11 = sum(rbinom(n/4, 1, prob = p.c))
-    #get number of success for the treatment
-    p.12 = sum(rbinom(n/4, 1, prob = p.t))
-    T.1 = ifelse(prop.test(x = c(p.11, p.12), n = c(n/4, n/4))$p.value<boundary1,
-                 1, 0)
-    # using the O'Brien-Fleming boundary
-    # 1 for rejecting the null, 0 for failing to reject the null.
-    if(T.1 == 0){
-      # if we fail to reject the null during the interim analysis:
-      p.21 = p.11 + sum(rbinom(n/4, 1, prob = p.c))
-      p.22 = p.12 + sum(rbinom(n/4, 1, prob = p.t))
-      overall.n = n
-      T.2 = ifelse(prop.test(x = c(p.21, p.22), n = c(n/2, n/2))$p.value<boundary2,
-                   1, 0)
-    }else{
-      #rejected the null, found a difference in the interim analysis:
-      p.21 = 0
-      p.22 = 0
-      overall.n = n/2
-      T.2 = 0
-    }
-
-  results[r, ] = c(r, p.11, p.12, T.1, p.21, p.22, T.2, T.1+T.2, overall.n)  
-  }
-  if(!is.na(simulationSettingName)){
-    write.csv(paste0(simulationSettingName, ".csv"))
-  }
-  return(results)
-}
-
-
 
