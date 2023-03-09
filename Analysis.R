@@ -32,7 +32,13 @@ trial.sim = function(p.t, p.c, n, S, simulationSettingName= NA,
     p.11 = sum(rbinom(n/4, 1, prob = p.c))
     #get number of success for the treatment
     p.12 = sum(rbinom(n/4, 1, prob = p.t))
-    T.1 = ifelse(suppressWarnings(prop.test(x = c(p.11, p.12), n = c(n/4, n/4)))$p.value<boundary1,
+    while(p.11==0 & p.12 == 0){
+      p.11 = sum(rbinom(n/4, 1, prob = p.c))
+      #get number of success for the treatment
+      p.12 = sum(rbinom(n/4, 1, prob = p.t))
+    }
+    
+    T.1 = ifelse(prop.test(x = c(p.11, p.12), n = c(n/4, n/4))$p.value<boundary1,
                  1, 0)
     # problem with the T.1 being NA right now.
     # using the O'Brien-Fleming boundary
@@ -44,7 +50,7 @@ trial.sim = function(p.t, p.c, n, S, simulationSettingName= NA,
       p.22 = p.12 + sum(rbinom(n/4, 1, prob = p.t))
       
       overall.n = n
-      T.2 = ifelse(suppressWarnings(prop.test(x = c(p.21, p.22), n = c(n/2, n/2)))$p.value<boundary2,
+      T.2 = ifelse(prop.test(x = c(p.21, p.22), n = c(n/2, n/2))$p.value<boundary2,
                    1, 0)
     }else{
       #rejected the null, found a difference in the interim analysis:
@@ -74,8 +80,8 @@ power.prop.test(n= NULL, p1 = 0, p2 = 0.15,
 # initial n is 48 in each group, 96 total.
 # this 24 in each group at the interim, 48 total
 
-test1 = suppressWarnings( trial.sim(p.t = 0.15, p.c = 0, n = 96, S = 1600, 
-                  boundary1 = 0.005, boundary2 = 0.048 ))
+test1 = ( trial.sim(p.t = 0.15, p.c = 0.00, n = 100, S = 1600, 
+                  boundary1 = 0.05, boundary2 = 0.001 ))
 colMeans(test1[, c("reject", "overall.n")])
 
 
@@ -124,7 +130,10 @@ power.prop.test(n = 100, p1 = .3, p2 = .2, sig.level = 0.05,
 
 simulationSettingName = "test"
 
-test1 = trial.sim(p.t = .3, p.c = .2, n=200, 1800, 0.005, 0.048)
+test1 = trial.sim(p.t = .3, p.c = .29, n=300, S= 2000, 
+                  boundary1 = 0.005, boundary2 = 0.048)
+colMeans(test1[, c("reject", "overall.n")])
+
 set.seed(16)
 test1 = trial.sim(p.t = .3, p.c = .2, n=400, S= 1800, 
                   boundary1 = 0.005, boundary2 = 0.048)
