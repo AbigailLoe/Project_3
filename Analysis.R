@@ -43,7 +43,6 @@ trial.sim = function(p.t, p.c, n, S, simulationSettingName= NA,
     # problem with the T.1 being NA right now.
     # using the O'Brien-Fleming boundary
     # 1 for rejecting the null, 0 for failing to reject the null.
-    print(T.1)
     if(T.1 == 0){
       # if we fail to reject the null during the interim analysis:
       p.21 = p.11 + sum(rbinom(n/4, 1, prob = p.c))
@@ -130,7 +129,11 @@ power.prop.test(n = 100, p1 = .3, p2 = .2, sig.level = 0.05,
 
 simulationSettingName = "test"
 
-test1 = trial.sim(p.t = .3, p.c = .29, n=300, S= 2000, 
+test1 = trial.sim(p.t = .3, p.c = .3, n=300, S= 2000, 
+                  boundary1 = 0.005, boundary2 = 0.048)
+colMeans(test1[, c("reject", "overall.n")])
+
+test1 = trial.sim(p.t = .15, p.c = .15, n=160, S= 2000, 
                   boundary1 = 0.005, boundary2 = 0.048)
 colMeans(test1[, c("reject", "overall.n")])
 
