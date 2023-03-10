@@ -151,3 +151,15 @@ colMeans(null4[, c("reject", "overall.n")])
 ### ====>>>> our significance levels might be too low. 
 
 ########## Changing the boundaries ########
+
+set.seed(16)
+test4 = ( trial.sim(p.t = 0.3, p.c = 0.15, n = 260, S = 2000, 
+                    boundary1 = 0.01, boundary2 = 0.048))
+set.seed(16)
+null4 = ( trial.sim(p.t = 0.15, p.c = 0.15, n = 260, S = 2000, 
+                    boundary1 = 0.01, boundary2 = 0.048))
+# why is my type I error lower than we would expect simply summing???
+colMeans(test4[, c("reject", "overall.n")])
+colMeans(null4[, c("reject", "overall.n")])
+
+
