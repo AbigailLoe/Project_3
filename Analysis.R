@@ -32,11 +32,11 @@ trial.sim = function(p.t, p.c, n, S, simulationSettingName= NA,
     p.11 = sum(rbinom(n/4, 1, prob = p.c))
     #get number of success for the treatment
     p.12 = sum(rbinom(n/4, 1, prob = p.t))
-    while(p.11==0 & p.12 == 0){
-      p.11 = sum(rbinom(n/4, 1, prob = p.c))
-      #get number of success for the treatment
-      p.12 = sum(rbinom(n/4, 1, prob = p.t))
-    }
+    # while(p.11==0 & p.12 == 0){
+    #   p.11 = sum(rbinom(n/4, 1, prob = p.c))
+    #   #get number of success for the treatment
+    #   p.12 = sum(rbinom(n/4, 1, prob = p.t))
+    # }
     
     T.1 = ifelse(prop.test(x = c(p.11, p.12), n = c(n/4, n/4))$p.value<boundary1,
                  1, 0)
@@ -174,7 +174,7 @@ null2 = ( trial.sim(p.t = 0.05, p.c = 0.05, n = 260, S = 2000,
 colMeans(null2[, c("reject", "overall.n")])
 
 set.seed(16)
-null3 = ( trial.sim(p.t = 0.1, p.c = 0.1, n = 260, S = 2000, 
+null3 = ( trial.sim(p.t = 0.1, p.c = 0.1, n = 260, S = 10^4, 
                     boundary1 = 0.00, boundary2 = 0.05))
 colMeans(null3[, c("reject", "overall.n")])
 #hmmmm, maybe because the normal approximation is not great.
