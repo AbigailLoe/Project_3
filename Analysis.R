@@ -9,7 +9,7 @@
 m = 0.01
 S.power = (1.96/m)^2 *.8*(1-.8); S.power
 S.alpha = (1.96/m)^2 *.95*(1-.95); S.alpha
-# implies we need at least 6147 montecarlo runs.
+# implies we need at least 6147 montecarlo runs for power, and 1825 for alpha
 
 # remains to be done: solve for the true margin of error for alpha!!!
 
