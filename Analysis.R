@@ -19,8 +19,7 @@ trial.sim = function(p.t, p.c, n, S, simulationSettingName= NA,
                      boundary1 = 0.005, boundary2 = 0.048){
   # p.t is proportion of successes we see on treatment
   # p.c is proportion of successes we see on control.
-  # n is the total number of people that we need to enroll across 
-  # both arms of the trial
+  # n is the number in one arm (assuming equal arms)
   # S is the number of monte carlo replicates.
   # simulationSetting name is a string that allows us to save the result of the simulation
   results = matrix(NA, nrow= S, ncol = 11)
@@ -29,15 +28,19 @@ trial.sim = function(p.t, p.c, n, S, simulationSettingName= NA,
   for(r in 1:S){
     # interim analysis
     #get number of success for the controls
-    p.11 = sum(rbinom(n/4, 1, prob = p.c))
+    p.11 = sum(rbinom(n/2, 1, prob = p.c))
     #get number of success for the treatment
-    p.12 = sum(rbinom(n/4, 1, prob = p.t))
+    p.12 = sum(rbinom(n/2, 1, prob = p.t))
     # while(p.11==0 & p.12 == 0){
     #   p.11 = sum(rbinom(n/4, 1, prob = p.c))
     #   #get number of success for the treatment
     #   p.12 = sum(rbinom(n/4, 1, prob = p.t))
     # }
-    Z.1 = abs((asin(p.11/(n/4))-asin(p.12/(n/4)))/sqrt(1/(n/2)))
+    # enrolled n people at this point in time.
+    # 1/4 size of the same.
+    neum = asin(sqrt(p.11/(n/2)))-asin(sqrt(p.12/(n/2)))
+    denom = sqrt(1/(4* n/2)+ 1/(4*n/2))
+    Z.1 = abs(neum/denom)
     #need to perform a two-sided test.
     pval1 = 2*(1-pnorm(Z.1))
     
@@ -50,15 +53,15 @@ trial.sim = function(p.t, p.c, n, S, simulationSettingName= NA,
     # 1 for rejecting the null, 0 for failing to reject the null.
     if(T.1 == 0){
       # if we fail to reject the null during the interim analysis:
-      p.21 = p.11 + sum(rbinom(n/4, 1, prob = p.c))
-      p.22 = p.12 + sum(rbinom(n/4, 1, prob = p.t))
+      p.21 = p.11 + sum(rbinom(n/2, 1, prob = p.c))
+      p.22 = p.12 + sum(rbinom(n/2, 1, prob = p.t))
       
-      overall.n = n
+      overall.n = 2*n
       
-      # their n = n, my n = n'
-      # n' = 2n
+      neum = asin(sqrt(p.21/n))-asin(sqrt(p.22/n))
+      denom =sqrt(1/(4* n)+ 1/(4*n))
       
-      Z.2 = abs((asin(p.21/(n/2))-asin(p.22/(n/2)))/sqrt(1/(2*n)))
+      Z.2 = abs(neum/denom)
       #need to perform a two-sided test.
       pval2 = 2*(1-pnorm(Z.2))
       
@@ -70,7 +73,7 @@ trial.sim = function(p.t, p.c, n, S, simulationSettingName= NA,
       #rejected the null, found a difference in the interim analysis:
       p.21 = 0
       p.22 = 0
-      overall.n = n/2
+      overall.n = n
       Z.2 = 0
       T.2 = 0
     }
@@ -112,10 +115,14 @@ power.prop.test(n= NULL, p1 = 0.05, p2 = 0.2,
 
 set.seed(16)
 
-test2 = ( trial.sim(p.t = 0.2, p.c = 0.05, n = 172, S = 1600, 
+test2 = ( trial.sim(p.t = 0.2, p.c = 0.05, n = 70, S = 1600, 
                     boundary1 = 0.005, boundary2 = 0.048 ))
 colMeans(test2[, c("reject", "overall.n")])
 #`168 or 172 are sufficient
+
+test2 = ( trial.sim(p.t = 0.1, p.c = 0.1, n = 70, S = 1600, 
+                    boundary1 = 0, boundary2 = 0.1 ))
+colMeans(test2[, c("reject", "overall.n")])
 `
 ######## Setting 3 #########
 
@@ -127,7 +134,7 @@ power.prop.test(n= NULL, p1 = 0.1, p2 = 0.25,
 # this 50 in each group at the interim, 100 total
 
 set.seed(16)
-test3 = ( trial.sim(p.t = 0.25, p.c = 0.1, n = 228, S = 1600, 
+test3 = ( trial.sim(p.t = 0.25, p.c = 0.1, n = 50, S = 1600, 
                     boundary1 = 0.005, boundary2 = 0.048 ))
 colMeans(test3[, c("reject", "overall.n")])
 
