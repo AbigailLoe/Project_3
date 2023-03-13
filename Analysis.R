@@ -9,7 +9,9 @@
 m = 0.01
 S.power = (1.96/m)^2 *.8*(1-.8); S.power
 S.alpha = (1.96/m)^2 *.95*(1-.95); S.alpha
-# implies we need at least 1537 montecarlo runs.
+# implies we need at least 6147 montecarlo runs.
+
+# remains to be done: solve for the true margin of error for alpha!!!
 
 
 
@@ -80,20 +82,21 @@ trial.sim = function(p.t, p.c, n, S, simulationSettingName= NA,
 
 ######## Setting 1 #########
 #p1 = 0, p2 = .15, sig.level = 0.05, power = 0.80
-power.prop.test(n= NULL, p1 = 0, p2 = 0.15,
+power.prop.test(n= NULL, p1 = 0.02, p2 = 0.17,
                 sig.level = 0.05, power= 0.80,
                 alternative = "two.sided")
-# initial n is 48 in each group, 96 total.
+# initial n is 58 in each group, 116 total.
 # this 24 in each group at the interim, 48 total
-set.seed(16)
-test1 = ( trial.sim(p.t = 0.15, p.c = 0.00, n = 30, S = round(S.power), 
-                  boundary1 = 0.005, boundary2 = 0.04))
+set.seed(16); test1 = trial.sim(p.t = 0.17, p.c = 0.02, n = 48,S = round(S.power),
+                                boundary1 = 0.005, boundary2 = 0.045)
 colMeans(test1[, c("reject", "overall.n")])
 
-null1 = trial.sim(p.t = 0, p.c = 0.00, n = 1000, S = round(S.power), 
-                  boundary1 = 0.005, boundary2 = 0.04)
+set.seed(16); null1 = trial.sim(p.t = 0.05, p.c = 0.05, n = 200, S = round(S.power), 
+                  boundary1 = 0.005, boundary2 = 0.045)
 colMeans(null1[, c("reject", "overall.n")])
-# type 1 error is miniscule here! this feels off.
+# type 1 error is huuuge here! this feels off.
+# could be an indicator of needing a large number of people in the extreme cases
+
 
 ######## Setting 2 #########
 #p1 = .05, p2 = .20, sig.level = 0.05, power = 0.80
@@ -106,17 +109,17 @@ power.prop.test(n= NULL, p1 = 0.05, p2 = 0.2,
 set.seed(16)
 
 test2 = ( trial.sim(p.t = 0.2, p.c = 0.05, n = 70, S = round(S.power), 
-                    boundary1 = 0.005, boundary2 = 0.048 ))
+                    boundary1 = 0.005, boundary2 = 0.045 ))
 colMeans(test2[, c("reject", "overall.n")])
-#`168 or 172 are sufficient
+#140
 
-set.seed(16); null2 = ( trial.sim(p.t = 0.05, p.c = 0.05, n = 70, S = round(S.power), 
-                    boundary1 = 0.005, boundary2 = 0.048))
+set.seed(16); null2 = ( trial.sim(p.t = 0.05, p.c = 0.05, n = 180, S = round(S.power), 
+                    boundary1 = 0.005, boundary2 = 0.045))
 colMeans(null2[, c("reject", "overall.n")])
 # really large type I error here...
 
-set.seed(16); null2 = ( trial.sim(p.t = 0.05, p.c = 0.05, n = 700, S = round(S.power), 
-                                  boundary1 = 0.005, boundary2 = 0.048))
+set.seed(16); null2 = ( trial.sim(p.t = 0.05, p.c = 0.05, n = 200, S = round(S.power), 
+                                  boundary1 = 0.005, boundary2 = 0.045))
 colMeans(null2[, c("reject", "overall.n")])
 # better if we make the sample size much much larger.
 
@@ -134,12 +137,12 @@ set.seed(16); test3 = ( trial.sim(p.t = 0.25, p.c = 0.1, n = 96, S = round(S.pow
                     boundary1 = 0.005, boundary2 = 0.048 ))
 colMeans(test3[, c("reject", "overall.n")])
 
-set.seed(16); null3 = ( trial.sim(p.t = 0.1, p.c = 0.1, n = 100, S = round(S.power), 
-                                  boundary1 = 0.005, boundary2 = 0.04 ))
+set.seed(16); null3 = ( trial.sim(p.t = 0.1, p.c = 0.1, n = 118, S = round(S.power), 
+                                  boundary1 = 0.005, boundary2 = 0.045 ))
 colMeans(null3[, c("reject", "overall.n")])
 
-set.seed(16); null3 = ( trial.sim(p.t = 0.1, p.c = 0.1, n = 110, S = round(S.power), 
-                                  boundary1 = 0.005, boundary2 = 0.04 ))
+set.seed(16); null3 = ( trial.sim(p.t = 0.1, p.c = 0.1, n = 150, S = round(S.power), 
+                                  boundary1 = 0.005, boundary2 = 0.045 ))
 colMeans(null3[, c("reject", "overall.n")])
 
 ######## Setting 4 #########
@@ -158,3 +161,16 @@ set.seed(16); null4 = ( trial.sim(p.t = 0.3, p.c = 0.3, n = 120, S = round(S.pow
                                   boundary1 = 0.005, boundary2 = 0.045 ))
 colMeans(null4[, c("reject", "overall.n")])
 
+
+
+
+
+######### In conclusion ########
+# want to creat a graph that has the various powers and alpha levels
+
+pcDat = seq(from = 0.02, to = 0.15, by = 0.01)
+
+for(i in 1:length(pcDat)){
+  
+  
+}
