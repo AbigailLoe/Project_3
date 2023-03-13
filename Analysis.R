@@ -98,9 +98,8 @@ power.prop.test(n= NULL, p1 = 0, p2 = 0.15,
 # initial n is 48 in each group, 96 total.
 # this 24 in each group at the interim, 48 total
 set.seed(16)
-test1 = ( trial.sim(p.t = 0.15, p.c = 0.00, n = 106, S = 1600, 
-                  boundary1 = 0.006, boundary2 = 0.048 , 
-                  simulationSettingName = "Alternative1"))
+test1 = ( trial.sim(p.t = 0.15, p.c = 0.00, n = 30, S = 1600, 
+                  boundary1 = 0.01, boundary2 = 0.038))
 colMeans(test1[, c("reject", "overall.n")])
 
 
@@ -120,8 +119,8 @@ test2 = ( trial.sim(p.t = 0.2, p.c = 0.05, n = 70, S = 1600,
 colMeans(test2[, c("reject", "overall.n")])
 #`168 or 172 are sufficient
 
-test2 = ( trial.sim(p.t = 0.1, p.c = 0.1, n = 70, S = 1600, 
-                    boundary1 = 0, boundary2 = 0.1 ))
+set.seed(16); test2 = ( trial.sim(p.t = 0.05, p.c = 0.05, n = 100, S = 2000, 
+                    boundary1 = 0.005, boundary2 = 0.04 ))
 colMeans(test2[, c("reject", "overall.n")])
 `
 ######## Setting 3 #########
