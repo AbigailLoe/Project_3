@@ -139,10 +139,12 @@ null2 = ( trial.sim(p.t = 0.05, p.c = 0.05, n = 268, S = 1600,
                     boundary1 = 0.006, boundary2 = 0.048))
 colMeans(null2[, c("reject", "overall.n")])
 # very conservative.
-
-null3 = ( trial.sim(p.t = 0.1, p.c = 0.1, n = 268, S = 1600, 
-                    boundary1 = 0.006, boundary2 = 0.048))
+set.seed(16)
+null3 = ( trial.sim(p.t = 0.5, p.c = 0.5, n = 20000, S = 1600, 
+                    boundary1 = 0.000, boundary2 = 0.05))
 colMeans(null3[, c("reject", "overall.n")])
+
+#wilson/ agresti-coull/ other tests: see google.
 
 null4 = ( trial.sim(p.t = 0.15, p.c = 0.15, n = 268, S = 1600, 
                     boundary1 = 0.006, boundary2 = 0.048))
@@ -177,6 +179,8 @@ set.seed(16)
 null3 = ( trial.sim(p.t = 0.1, p.c = 0.1, n = 260, S = 10^4, 
                     boundary1 = 0.00, boundary2 = 0.05))
 colMeans(null3[, c("reject", "overall.n")])
+
+
 #hmmmm, maybe because the normal approximation is not great.
 
 #fix with the normal approximation??
