@@ -88,11 +88,11 @@ power.prop.test(n= NULL, p1 = 0.02, p2 = 0.17,
 # initial n is 58 in each group, 116 total.
 # this 24 in each group at the interim, 48 total
 set.seed(16); test1 = trial.sim(p.t = 0.17, p.c = 0.02, n = 48,S = ceiling(S.power),
-                                boundary1 = 0.005, boundary2 = 0.045)
+                                boundary1 = 0.005, boundary2 = 0.048)
 colMeans(test1[, c("reject", "overall.n")])
 
-set.seed(16); null1 = trial.sim(p.t = 0.05, p.c = 0.05, n = 200, S = ceiling(S.alpha), 
-                  boundary1 = 0.005, boundary2 = 0.045)
+set.seed(16); null1 = trial.sim(p.t = 0.02, p.c = 0.02, n = 400, S = ceiling(S.alpha), 
+                  boundary1 = 0, boundary2 = 0.05)
 colMeans(null1[, c("reject", "overall.n")])
 # type 1 error is huuuge here! this feels off.
 # could be an indicator of needing a large number of people in the extreme cases
@@ -109,21 +109,16 @@ power.prop.test(n= NULL, p1 = 0.05, p2 = 0.2,
 set.seed(16)
 
 test2 = ( trial.sim(p.t = 0.2, p.c = 0.05, n = 70, S = ceiling(S.power), 
-                    boundary1 = 0.005, boundary2 = 0.045 ))
+                    boundary1 = 0.005, boundary2 = 0.048 ))
 colMeans(test2[, c("reject", "overall.n")])
 #140
 
 set.seed(16); null2 = ( trial.sim(p.t = 0.05, p.c = 0.05, n = 180, S = ceiling(S.alpha), 
-                    boundary1 = 0.005, boundary2 = 0.045))
+                    boundary1 = 0.005, boundary2 = 0.048))
 colMeans(null2[, c("reject", "overall.n")])
-# really large type I error here...
 
-set.seed(16); null2 = ( trial.sim(p.t = 0.05, p.c = 0.05, n = 200, S = ceiling(S.alpha), 
-                                  boundary1 = 0.005, boundary2 = 0.045))
-colMeans(null2[, c("reject", "overall.n")])
-# better if we make the sample size much much larger.
 
-`
+
 ######## Setting 3 #########
 
 #p1 = .1, p2 = .25, sig.level = 0.05, power = 0.80
@@ -138,11 +133,11 @@ set.seed(16); test3 = ( trial.sim(p.t = 0.25, p.c = 0.1, n = 96, S = ceiling(S.p
 colMeans(test3[, c("reject", "overall.n")])
 
 set.seed(16); null3 = ( trial.sim(p.t = 0.1, p.c = 0.1, n = 118, S = ceiling(S.alpha), 
-                                  boundary1 = 0.005, boundary2 = 0.045 ))
+                                  boundary1 = 0.005, boundary2 = 0.048 ))
 colMeans(null3[, c("reject", "overall.n")])
 
 set.seed(16); null3 = ( trial.sim(p.t = 0.1, p.c = 0.1, n = 150, S = ceiling(S.alpha), 
-                                  boundary1 = 0.005, boundary2 = 0.045 ))
+                                  boundary1 = 0.005, boundary2 = 0.048 ))
 colMeans(null3[, c("reject", "overall.n")])
 
 ######## Setting 4 #########
@@ -153,12 +148,12 @@ power.prop.test(n= NULL, p1 = 0.15, p2 = 0.3,
 # initial n is 120 in each group, 240 total.
 # this 60 in each group at the interim, 120 total
 set.seed(16); test4 = ( trial.sim(p.t = 0.3, p.c = 0.15, n = 120, S = ceiling(S.power), 
-                    boundary1 = 0.005, boundary2 = 0.045 ))
+                    boundary1 = 0.005, boundary2 = 0.048 ))
 colMeans(test4[, c("reject", "overall.n")])
 
 
 set.seed(16); null4 = ( trial.sim(p.t = 0.3, p.c = 0.3, n = 120, S = ceiling(S.alpha), 
-                                  boundary1 = 0.005, boundary2 = 0.045 ))
+                                  boundary1 = 0.005, boundary2 = 0.048 ))
 colMeans(null4[, c("reject", "overall.n")])
 
 
@@ -169,9 +164,9 @@ colMeans(null4[, c("reject", "overall.n")])
 # want to creat a graph that has the various powers and alpha levels
 # also varying n 
 
-pcDat = seq(from = 0.02, to = 0.15, by = 0.005)
+pcDat = seq(from = 0.05, to = 0.15, by = 0.005)
 
-nChoices = seq(from = 120, to = 440, by = 60)
+nChoices = seq(from = 80, to = 250, by = 30); nChoices
 
 
 finalDataFrame = as.data.frame(matrix(ncol = 6, nrow = length(pcDat)*length(nChoices)))
@@ -186,12 +181,12 @@ for (j in 1:length(nChoices)){
     phat = pcDat[i]
     
     alt = trial.sim(p.t = phat+0.15, p.c = phat, n = nSize, S = ceiling(S.power), 
-                    boundary1 = 0.005, boundary2 = 0.04 )
+                    boundary1 = 0.005, boundary2 = 0.048 )
     finalDataFrame[iter, c("power", "expectedSampleAlt", "trialSize")]=  
-      c(colMeans(alt[, c("reject", "overall.n")]), nSize)
+      c(colMeans(alt[, c("reject", "overall.n")]), 2*nSize)
     
     pointNull = trial.sim(p.t = phat, p.c = phat, n = nSize, S = ceiling(S.alpha), 
-                          boundary1 = 0.005, boundary2 = 0.04 )
+                          boundary1 = 0.005, boundary2 = 0.048)
     finalDataFrame[iter, c("propNull", "typeIError", "expectedSampleNull")] = 
       c(phat, colMeans(pointNull[,c("reject", "overall.n")]))
     iter = iter+1
@@ -216,9 +211,11 @@ ggplot(data = finalDataFrame, aes(x = propNull))+
        y = "Error Probability",
        color = "Error Types",
        title = "Type I and Type 2 Errors",
-       subtitle = "(Stratified by Sample Size in Each Arm)")+
+       subtitle = "(Stratified by Total Sample Size)")+
   scale_color_manual(values = colors)+
-  facet_wrap(~trialSize); ggsave("Errors.png")
+  facet_wrap(~trialSize)
+
+#ggsave("Errors.png")
 
 
 colors2 = c("Alternative" = "blue", "Null" = "orange")
@@ -229,6 +226,8 @@ ggplot(data = finalDataFrame, aes(x = propNull))+
        y = "Average Number of People Enrolled",
        color = "Settings",
        title = "Expected Sample Sizes",
-       subtitle = "(Stratified by Sample Size in Each Arm)")+
+       subtitle = "(Stratified by Total Possible Sample Size)")+
   scale_color_manual(values = colors2)+
-  facet_wrap(~trialSize); ggsave("Expected.sample.sizes.png")
+  facet_wrap(~trialSize)
+
+# ggsave("Expected.sample.sizes.png")
