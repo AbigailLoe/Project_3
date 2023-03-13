@@ -6,12 +6,10 @@
 # win.
 
 # ---- Determining S ------
-m = 0.02
+m = 0.01
 S.power = (1.96/m)^2 *.8*(1-.8); S.power
 S.alpha = (1.96/m)^2 *.95*(1-.95); S.alpha
 # implies we need at least 1537 montecarlo runs.
-
-
 
 
 
@@ -19,7 +17,7 @@ trial.sim = function(p.t, p.c, n, S, simulationSettingName= NA,
                      boundary1 = 0.005, boundary2 = 0.048){
   # p.t is proportion of successes we see on treatment
   # p.c is proportion of successes we see on control.
-  # n is the number in one arm (assuming equal arms)
+  # n is the number in each arm (assuming equal arms)
   # S is the number of monte carlo replicates.
   # simulationSetting name is a string that allows us to save the result of the simulation
   results = matrix(NA, nrow= S, ncol = 11)
@@ -31,23 +29,14 @@ trial.sim = function(p.t, p.c, n, S, simulationSettingName= NA,
     p.11 = sum(rbinom(n/2, 1, prob = p.c))
     #get number of success for the treatment
     p.12 = sum(rbinom(n/2, 1, prob = p.t))
-    # while(p.11==0 & p.12 == 0){
-    #   p.11 = sum(rbinom(n/4, 1, prob = p.c))
-    #   #get number of success for the treatment
-    #   p.12 = sum(rbinom(n/4, 1, prob = p.t))
-    # }
-    # enrolled n people at this point in time.
-    # 1/4 size of the same.
     neum = asin(sqrt(p.11/(n/2)))-asin(sqrt(p.12/(n/2)))
     denom = sqrt(1/(4* n/2)+ 1/(4*n/2))
-    Z.1 = abs(neum/denom)
+   
+     Z.1 = abs(neum/denom)
     #need to perform a two-sided test.
     pval1 = 2*(1-pnorm(Z.1))
     
     T.1 = ifelse(pval1< boundary1, 1, 0 )
-    
-    # T.1 = ifelse(prop.test(x = c(p.11, p.12), n = c(n/4, n/4))$p.value<boundary1,
-    #              1, 0)
     # problem with the T.1 being NA right now.
     # using the O'Brien-Fleming boundary
     # 1 for rejecting the null, 0 for failing to reject the null.
@@ -89,7 +78,6 @@ trial.sim = function(p.t, p.c, n, S, simulationSettingName= NA,
 
 
 
-#### Alternative Settings ####
 ######## Setting 1 #########
 #p1 = 0, p2 = .15, sig.level = 0.05, power = 0.80
 power.prop.test(n= NULL, p1 = 0, p2 = 0.15,
@@ -98,11 +86,14 @@ power.prop.test(n= NULL, p1 = 0, p2 = 0.15,
 # initial n is 48 in each group, 96 total.
 # this 24 in each group at the interim, 48 total
 set.seed(16)
-test1 = ( trial.sim(p.t = 0.15, p.c = 0.00, n = 30, S = 1600, 
-                  boundary1 = 0.01, boundary2 = 0.038))
+test1 = ( trial.sim(p.t = 0.15, p.c = 0.00, n = 30, S = round(S.power), 
+                  boundary1 = 0.005, boundary2 = 0.04))
 colMeans(test1[, c("reject", "overall.n")])
 
-
+null1 = trial.sim(p.t = 0, p.c = 0.00, n = 1000, S = round(S.power), 
+                  boundary1 = 0.005, boundary2 = 0.04)
+colMeans(null1[, c("reject", "overall.n")])
+# type 1 error is miniscule here! this feels off.
 
 ######## Setting 2 #########
 #p1 = .05, p2 = .20, sig.level = 0.05, power = 0.80
@@ -114,14 +105,21 @@ power.prop.test(n= NULL, p1 = 0.05, p2 = 0.2,
 
 set.seed(16)
 
-test2 = ( trial.sim(p.t = 0.2, p.c = 0.05, n = 70, S = 1600, 
+test2 = ( trial.sim(p.t = 0.2, p.c = 0.05, n = 70, S = round(S.power), 
                     boundary1 = 0.005, boundary2 = 0.048 ))
 colMeans(test2[, c("reject", "overall.n")])
 #`168 or 172 are sufficient
 
-set.seed(16); test2 = ( trial.sim(p.t = 0.05, p.c = 0.05, n = 100, S = 2000, 
-                    boundary1 = 0.005, boundary2 = 0.04 ))
-colMeans(test2[, c("reject", "overall.n")])
+set.seed(16); null2 = ( trial.sim(p.t = 0.05, p.c = 0.05, n = 70, S = round(S.power), 
+                    boundary1 = 0.005, boundary2 = 0.048))
+colMeans(null2[, c("reject", "overall.n")])
+# really large type I error here...
+
+set.seed(16); null2 = ( trial.sim(p.t = 0.05, p.c = 0.05, n = 700, S = round(S.power), 
+                                  boundary1 = 0.005, boundary2 = 0.048))
+colMeans(null2[, c("reject", "overall.n")])
+# better if we make the sample size much much larger.
+
 `
 ######## Setting 3 #########
 
@@ -132,10 +130,17 @@ power.prop.test(n= NULL, p1 = 0.1, p2 = 0.25,
 # initial n is 100 in each group, 200 total.
 # this 50 in each group at the interim, 100 total
 
-set.seed(16)
-test3 = ( trial.sim(p.t = 0.25, p.c = 0.1, n = 50, S = 1600, 
+set.seed(16); test3 = ( trial.sim(p.t = 0.25, p.c = 0.1, n = 96, S = round(S.power), 
                     boundary1 = 0.005, boundary2 = 0.048 ))
 colMeans(test3[, c("reject", "overall.n")])
+
+set.seed(16); null3 = ( trial.sim(p.t = 0.1, p.c = 0.1, n = 100, S = round(S.power), 
+                                  boundary1 = 0.005, boundary2 = 0.04 ))
+colMeans(null3[, c("reject", "overall.n")])
+
+set.seed(16); null3 = ( trial.sim(p.t = 0.1, p.c = 0.1, n = 110, S = round(S.power), 
+                                  boundary1 = 0.005, boundary2 = 0.04 ))
+colMeans(null3[, c("reject", "overall.n")])
 
 ######## Setting 4 #########
 #p1 = .15, p2 = .3, sig.level = 0.05, power = 0.80
@@ -144,65 +149,12 @@ power.prop.test(n= NULL, p1 = 0.15, p2 = 0.3,
                 alternative = "two.sided")
 # initial n is 120 in each group, 240 total.
 # this 60 in each group at the interim, 120 total
-set.seed(16)
-test4 = ( trial.sim(p.t = 0.3, p.c = 0.15, n = 268, S = 1600, 
-                    boundary1 = 0.005, boundary2 = 0.048 ))
+set.seed(16); test4 = ( trial.sim(p.t = 0.3, p.c = 0.15, n = 120, S = round(S.power), 
+                    boundary1 = 0.005, boundary2 = 0.045 ))
 colMeans(test4[, c("reject", "overall.n")])
 
 
-### ====>>>> n = 268
-
-null1 = ( trial.sim(p.t = 0.01, p.c = 0.01, n = 268, S = 1600, 
-                            boundary1 = 0.006, boundary2 = 0.048))
-colMeans(null1[, c("reject", "overall.n")])
-# very very conservative!
-
-null2 = ( trial.sim(p.t = 0.05, p.c = 0.05, n = 268, S = 1600, 
-                    boundary1 = 0.006, boundary2 = 0.048))
-colMeans(null2[, c("reject", "overall.n")])
-# very conservative.
-set.seed(16)
-null3 = ( trial.sim(p.t = 0.5, p.c = 0.5, n = 20000, S = 1600, 
-                    boundary1 = 0.000, boundary2 = 0.05))
-colMeans(null3[, c("reject", "overall.n")])
-
-#wilson/ agresti-coull/ other tests: see google.
-
-null4 = ( trial.sim(p.t = 0.15, p.c = 0.15, n = 268, S = 1600, 
-                    boundary1 = 0.006, boundary2 = 0.048))
+set.seed(16); null4 = ( trial.sim(p.t = 0.3, p.c = 0.3, n = 120, S = round(S.power), 
+                                  boundary1 = 0.005, boundary2 = 0.045 ))
 colMeans(null4[, c("reject", "overall.n")])
 
-### ====>>>> our significance levels might be too low. 
-
-########## Changing the boundaries ########
-
-set.seed(16)
-test4 = ( trial.sim(p.t = 0.3, p.c = 0.15, n = 260, S = 2000, 
-                    boundary1 = 0.01, boundary2 = 0.048))
-set.seed(16)
-null4 = ( trial.sim(p.t = 0.15, p.c = 0.15, n = 260, S = 2000, 
-                    boundary1 = 0.01, boundary2 = 0.048))
-# why is my type I error lower than we would expect simply summing???
-colMeans(test4[, c("reject", "overall.n")])
-colMeans(null4[, c("reject", "overall.n")])
-
-set.seed(16)
-null1 = ( trial.sim(p.t = 0.01, p.c = 0.01, n = 260, S = 2000, 
-                    boundary1 = 0.01, boundary2 = 0.048))
-colMeans(null1[, c("reject", "overall.n")])
-
-
-set.seed(16)
-null2 = ( trial.sim(p.t = 0.05, p.c = 0.05, n = 260, S = 2000, 
-                    boundary1 = 0.01, boundary2 = 0.048))
-colMeans(null2[, c("reject", "overall.n")])
-
-set.seed(16)
-null3 = ( trial.sim(p.t = 0.1, p.c = 0.1, n = 260, S = 10^4, 
-                    boundary1 = 0.00, boundary2 = 0.05))
-colMeans(null3[, c("reject", "overall.n")])
-
-
-#hmmmm, maybe because the normal approximation is not great.
-
-#fix with the normal approximation??
