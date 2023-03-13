@@ -212,7 +212,7 @@ ggplot(data = finalDataFrame, aes(x = propNull))+
   geom_line(aes(y = typeIError, color = "Type I"))+
   geom_line(aes(y = 1-power, color = "Type II"))+
   geom_abline(intercept = 0.05, slope = 0, color = "blue", linetype = 3) +
-  labs(x = "Response Probability under the Null",
+  labs(x = "Response P(MRB) under the Null",
        y = "Error Probability",
        color = "Error Types",
        title = "Type I and Type 2 Errors",
@@ -225,7 +225,7 @@ colors2 = c("Alternative" = "blue", "Null" = "orange")
 ggplot(data = finalDataFrame, aes(x = propNull))+
   geom_line(aes(y = expectedSampleAlt, color = "Alternative"))+
   geom_line(aes(y = expectedSampleNull, color = "Null"))+
-  labs(x = "Response Probability under the Null",
+  labs(x = "Response P(MRB) under the Null",
        y = "Average Number of People Enrolled",
        color = "Settings",
        title = "Expected Sample Sizes",
