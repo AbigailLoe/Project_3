@@ -23,9 +23,9 @@ trial.sim = function(p.t, p.c, n, S, simulationSettingName= NA,
   # both arms of the trial
   # S is the number of monte carlo replicates.
   # simulationSetting name is a string that allows us to save the result of the simulation
-  results = matrix(NA, nrow= S, ncol = 9)
-  colnames(results) = c("replicate", "p.11", "p.12", "T.1",
-                        "p.21", "p.22", "T.2", "reject", "overall.n")
+  results = matrix(NA, nrow= S, ncol = 11)
+  colnames(results) = c("replicate", "p.11", "p.12", "Z.1","T.1",
+                        "p.21", "p.22","Z.2", "T.2", "reject", "overall.n")
   for(r in 1:S){
     # interim analysis
     #get number of success for the controls
@@ -37,9 +37,14 @@ trial.sim = function(p.t, p.c, n, S, simulationSettingName= NA,
     #   #get number of success for the treatment
     #   p.12 = sum(rbinom(n/4, 1, prob = p.t))
     # }
+    Z.1 = abs((asin(p.11/(n/4))-asin(p.12/(n/4)))/sqrt(1/(n/2)))
+    #need to perform a two-sided test.
+    pval1 = 2*(1-pnorm(Z.1))
     
-    T.1 = ifelse(prop.test(x = c(p.11, p.12), n = c(n/4, n/4))$p.value<boundary1,
-                 1, 0)
+    T.1 = ifelse(pval1< boundary1, 1, 0 )
+    
+    # T.1 = ifelse(prop.test(x = c(p.11, p.12), n = c(n/4, n/4))$p.value<boundary1,
+    #              1, 0)
     # problem with the T.1 being NA right now.
     # using the O'Brien-Fleming boundary
     # 1 for rejecting the null, 0 for failing to reject the null.
@@ -49,17 +54,28 @@ trial.sim = function(p.t, p.c, n, S, simulationSettingName= NA,
       p.22 = p.12 + sum(rbinom(n/4, 1, prob = p.t))
       
       overall.n = n
-      T.2 = ifelse(prop.test(x = c(p.21, p.22), n = c(n/2, n/2))$p.value<boundary2,
-                   1, 0)
+      
+      # their n = n, my n = n'
+      # n' = 2n
+      
+      Z.2 = abs((asin(p.21/(n/2))-asin(p.22/(n/2)))/sqrt(1/(2*n)))
+      #need to perform a two-sided test.
+      pval2 = 2*(1-pnorm(Z.2))
+      
+      T.1 = ifelse(pval2< boundary2, 1, 0 )
+      
+      # T.2 = ifelse(prop.test(x = c(p.21, p.22), n = c(n/2, n/2))$p.value<boundary2,
+      #              1, 0)
     }else{
       #rejected the null, found a difference in the interim analysis:
       p.21 = 0
       p.22 = 0
       overall.n = n/2
+      Z.2 = 0
       T.2 = 0
     }
     
-    results[r, ] = c(r, p.11, p.12, T.1, p.21, p.22, T.2, T.1+T.2, overall.n)  
+    results[r, ] = c(r, p.11, p.12, Z.1, T.1, p.21, p.22, Z.2, T.2, T.1+T.2, overall.n)  
   }
   if(!is.na(simulationSettingName)){
     write.csv(paste0(simulationSettingName, ".csv"))
