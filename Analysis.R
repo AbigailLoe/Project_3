@@ -175,7 +175,7 @@ colMeans(null4[, c("reject", "overall.n")])
 
 pcDat = seq(from = 0.05, to = 0.15, by = 0.005)
 
-nChoices = seq(from = 70, to = 140, by = 20); nChoices
+nChoices = seq(from = 110, to = 132, by = 4); nChoices
 
 
 finalDataFrame = as.data.frame(matrix(ncol = 6, nrow = length(pcDat)*length(nChoices)))
