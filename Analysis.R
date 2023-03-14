@@ -6,7 +6,7 @@
 # win.
 
 # ---- Determining S ------
-m = 0.01
+m = 0.02
 S.power = (1.96/m)^2 *.8*(1-.8); S.power
 S.alpha = (1.96/m)^2 *.95*(1-.95); S.alpha
 # implies we need at least 6147 montecarlo runs for power, and 1825 for alpha
@@ -31,13 +31,27 @@ trial.sim = function(p.t, p.c, n, S, simulationSettingName= NA,
     p.11 = sum(rbinom(n/2, 1, prob = p.c))
     #get number of success for the treatment
     p.12 = sum(rbinom(n/2, 1, prob = p.t))
-    neum = asin(sqrt(p.11/(n/2)))-asin(sqrt(p.12/(n/2)))
-    denom = sqrt(1/(4* n/2)+ 1/(4*n/2))
-   
-     Z.1 = abs(neum/denom)
-    #need to perform a two-sided test.
-    pval1 = 2*(1-pnorm(Z.1))
     
+    while(p.11 ==0 & p.12 == 0){
+      p.11 = sum(rbinom(n/2, 1, prob = p.c))
+      #get number of success for the treatment
+      p.12 = sum(rbinom(n/2, 1, prob = p.t))
+    }
+    # neum = asin(sqrt(p.11/(n/2)))-asin(sqrt(p.12/(n/2)))
+    # denom = sqrt(1/(4* n/2)+ 1/(4*n/2))
+    # 
+    #  Z.1 = abs(neum/denom)
+    # #need to perform a two-sided test.
+    # pval1 = 2*(1-pnorm(Z.1))
+    
+    phat1 = p.11/(n/2)
+    phat2 = p.12/(n/2)
+    
+    Z.1 = (phat1 - phat2)/
+      sqrt(phat1* (1-phat1)/(n/2) + phat2* (1-phat2)/(n/2))
+      
+  
+    pval1= 2* ( 1- pnorm(abs(Z.1)))
     T.1 = ifelse(pval1< boundary1, 1, 0 )
     # problem with the T.1 being NA right now.
     # using the O'Brien-Fleming boundary
@@ -49,15 +63,26 @@ trial.sim = function(p.t, p.c, n, S, simulationSettingName= NA,
       
       overall.n = 2*n
       
-      neum = asin(sqrt(p.21/n))-asin(sqrt(p.22/n))
-      denom =sqrt(1/(4* n)+ 1/(4*n))
+      # neum = asin(sqrt(p.21/n))-asin(sqrt(p.22/n))
+      # denom =sqrt(1/(4* n)+ 1/(4*n))
+      # 
+      # Z.2 = abs(neum/denom)
+      # #need to perform a two-sided test.
       
-      Z.2 = abs(neum/denom)
-      #need to perform a two-sided test.
-      pval2 = 2*(1-pnorm(Z.2))
+      phat1 = p.21/(n)
+      phat2 = p.22/(n)
       
-      T.1 = ifelse(pval2< boundary2, 1, 0 )
+      Z.2 = (phat1 - phat2)/
+        sqrt(phat1* (1-phat1)/(n) + phat2* (1-phat2)/(n))
       
+      
+      pval2= 2* ( 1- pnorm(abs(Z.2)))
+      T.2 = ifelse(pval2< boundary2, 1, 0 )
+      
+      # pval2 = 2*(1-pnorm(Z.2))
+      # 
+      # T.2 = ifelse(pval2< boundary2, 1, 0 )
+      # 
       # T.2 = ifelse(prop.test(x = c(p.21, p.22), n = c(n/2, n/2))$p.value<boundary2,
       #              1, 0)
     }else{
@@ -82,20 +107,6 @@ trial.sim = function(p.t, p.c, n, S, simulationSettingName= NA,
 
 ######## Setting 1 #########
 #p1 = 0, p2 = .15, sig.level = 0.05, power = 0.80
-power.prop.test(n= NULL, p1 = 0.02, p2 = 0.17,
-                sig.level = 0.05, power= 0.80,
-                alternative = "two.sided")
-# initial n is 58 in each group, 116 total.
-# this 24 in each group at the interim, 48 total
-set.seed(16); test1 = trial.sim(p.t = 0.17, p.c = 0.02, n = 48,S = ceiling(S.power),
-                                boundary1 = 0.005, boundary2 = 0.048)
-colMeans(test1[, c("reject", "overall.n")])
-
-set.seed(16); null1 = trial.sim(p.t = 0.02, p.c = 0.02, n = 400, S = ceiling(S.alpha), 
-                  boundary1 = 0, boundary2 = 0.05)
-colMeans(null1[, c("reject", "overall.n")])
-# type 1 error is huuuge here! this feels off.
-# could be an indicator of needing a large number of people in the extreme cases
 
 
 ######## Setting 2 #########
@@ -108,12 +119,12 @@ power.prop.test(n= NULL, p1 = 0.05, p2 = 0.2,
 
 set.seed(16)
 
-test2 = ( trial.sim(p.t = 0.2, p.c = 0.05, n = 70, S = ceiling(S.power), 
+test2 = ( trial.sim(p.t = 0.2, p.c = 0.05, n = 76, S = ceiling(S.power), 
                     boundary1 = 0.005, boundary2 = 0.048 ))
 colMeans(test2[, c("reject", "overall.n")])
 #140
 
-set.seed(16); null2 = ( trial.sim(p.t = 0.05, p.c = 0.05, n = 180, S = ceiling(S.alpha), 
+set.seed(16); null2 = ( trial.sim(p.t = 0.05, p.c = 0.05, n = 76, S = ceiling(S.alpha), 
                     boundary1 = 0.005, boundary2 = 0.048))
 colMeans(null2[, c("reject", "overall.n")])
 
@@ -128,17 +139,15 @@ power.prop.test(n= NULL, p1 = 0.1, p2 = 0.25,
 # initial n is 100 in each group, 200 total.
 # this 50 in each group at the interim, 100 total
 
-set.seed(16); test3 = ( trial.sim(p.t = 0.25, p.c = 0.1, n = 96, S = ceiling(S.power), 
+set.seed(16); test3 = ( trial.sim(p.t = 0.25, p.c = 0.1, n = 122, S = ceiling(S.power), 
                     boundary1 = 0.005, boundary2 = 0.048 ))
 colMeans(test3[, c("reject", "overall.n")])
 
-set.seed(16); null3 = ( trial.sim(p.t = 0.1, p.c = 0.1, n = 118, S = ceiling(S.alpha), 
+set.seed(16); null3 = ( trial.sim(p.t = 0.1, p.c = 0.1, n = 122, S = ceiling(S.alpha), 
                                   boundary1 = 0.005, boundary2 = 0.048 ))
 colMeans(null3[, c("reject", "overall.n")])
 
-set.seed(16); null3 = ( trial.sim(p.t = 0.1, p.c = 0.1, n = 150, S = ceiling(S.alpha), 
-                                  boundary1 = 0.005, boundary2 = 0.048 ))
-colMeans(null3[, c("reject", "overall.n")])
+
 
 ######## Setting 4 #########
 #p1 = .15, p2 = .3, sig.level = 0.05, power = 0.80
@@ -152,7 +161,7 @@ set.seed(16); test4 = ( trial.sim(p.t = 0.3, p.c = 0.15, n = 120, S = ceiling(S.
 colMeans(test4[, c("reject", "overall.n")])
 
 
-set.seed(16); null4 = ( trial.sim(p.t = 0.3, p.c = 0.3, n = 120, S = ceiling(S.alpha), 
+set.seed(16); null4 = ( trial.sim(p.t = 0.3, p.c = 0.3, n = 126, S = ceiling(S.alpha), 
                                   boundary1 = 0.005, boundary2 = 0.048 ))
 colMeans(null4[, c("reject", "overall.n")])
 
@@ -166,7 +175,7 @@ colMeans(null4[, c("reject", "overall.n")])
 
 pcDat = seq(from = 0.05, to = 0.15, by = 0.005)
 
-nChoices = seq(from = 110, to = 280, by = 30); nChoices
+nChoices = seq(from = 70, to = 140, by = 20); nChoices
 
 
 finalDataFrame = as.data.frame(matrix(ncol = 6, nrow = length(pcDat)*length(nChoices)))
@@ -181,12 +190,12 @@ for (j in 1:length(nChoices)){
     phat = pcDat[i]
     
     alt = trial.sim(p.t = phat+0.15, p.c = phat, n = nSize, S = ceiling(S.power), 
-                    boundary1 = 0.005, boundary2 = 0.048 )
+                    boundary1 = 0.01, boundary2 = 0.05 )
     finalDataFrame[iter, c("power", "expectedSampleAlt", "trialSize")]=  
       c(colMeans(alt[, c("reject", "overall.n")]), 2*nSize)
     
     pointNull = trial.sim(p.t = phat, p.c = phat, n = nSize, S = ceiling(S.alpha), 
-                          boundary1 = 0.005, boundary2 = 0.048)
+                          boundary1 = 0.01, boundary2 = 0.05)
     finalDataFrame[iter, c("propNull", "typeIError", "expectedSampleNull")] = 
       c(phat, colMeans(pointNull[,c("reject", "overall.n")]))
     iter = iter+1
@@ -201,9 +210,9 @@ library(ggplot2)
 colors <- c("Type I" = "blue", "Type II" = "orange")
 
 ggplot(data = finalDataFrame, aes(x = propNull))+
-  geom_ribbon(aes(ymin = 0.2-0.01,  ymax = 0.2+0.01), fill = "lightgrey")+
+  geom_ribbon(aes(ymin = 0.2-m,  ymax = 0.2+m), fill = "lightgrey")+
   geom_abline(intercept = 0.2, slope = 0, color = "orange", linetype = 2) +
-  geom_ribbon(aes(ymin = 0.05-0.01,  ymax = 0.05+0.01), fill = "lightgrey")+
+  geom_ribbon(aes(ymin = 0.05-m,  ymax = 0.05+m), fill = "lightgrey")+
   geom_line(aes(y = typeIError, color = "Type I"))+
   geom_line(aes(y = 1-power, color = "Type II"))+
   geom_abline(intercept = 0.05, slope = 0, color = "blue", linetype = 3) +
