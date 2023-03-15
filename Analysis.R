@@ -32,26 +32,11 @@ trial.sim = function(p.t, p.c, n, S, simulationSettingName= NA,
     #get number of success for the treatment
     p.12 = sum(rbinom(n/2, 1, prob = p.t))
     
-    while(p.11 ==0 & p.12 == 0){
-      p.11 = sum(rbinom(n/2, 1, prob = p.c))
-      #get number of success for the treatment
-      p.12 = sum(rbinom(n/2, 1, prob = p.t))
-    }
-    # neum = asin(sqrt(p.11/(n/2)))-asin(sqrt(p.12/(n/2)))
-    # denom = sqrt(1/(4* n/2)+ 1/(4*n/2))
-    # 
-    #  Z.1 = abs(neum/denom)
-    # #need to perform a two-sided test.
-    # pval1 = 2*(1-pnorm(Z.1))
+    response.1 = matrix(c(p.11, n/2-p.11, p.12, n/2-p.12 ), nrow = 2)
     
-    phat1 = p.11/(n/2)
-    phat2 = p.12/(n/2)
-    
-    Z.1 = (phat1 - phat2)/
-      sqrt(phat1* (1-phat1)/(n/2) + phat2* (1-phat2)/(n/2))
-      
-  
-    pval1= 2* ( 1- pnorm(abs(Z.1)))
+    test.1 = fisher.test(response.1, alternative = "two.sided")
+    Z.1 = test.1$estimate
+    pval1= test.1$p.value
     T.1 = ifelse(pval1< boundary1, 1, 0 )
     # problem with the T.1 being NA right now.
     # using the O'Brien-Fleming boundary
@@ -62,29 +47,13 @@ trial.sim = function(p.t, p.c, n, S, simulationSettingName= NA,
       p.22 = p.12 + sum(rbinom(n/2, 1, prob = p.t))
       
       overall.n = 2*n
+      response.2 = matrix(c(p.21, n-p.21, p.22, n-p.22 ), nrow = 2)
+      test.2 = fisher.test(response.2, alternative = "two.sided")
       
-      # neum = asin(sqrt(p.21/n))-asin(sqrt(p.22/n))
-      # denom =sqrt(1/(4* n)+ 1/(4*n))
-      # 
-      # Z.2 = abs(neum/denom)
-      # #need to perform a two-sided test.
-      
-      phat1 = p.21/(n)
-      phat2 = p.22/(n)
-      
-      Z.2 = (phat1 - phat2)/
-        sqrt(phat1* (1-phat1)/(n) + phat2* (1-phat2)/(n))
-      
-      
-      pval2= 2* ( 1- pnorm(abs(Z.2)))
+      Z.2 = test.2$estimate
+      pval2= test.2$p.value
       T.2 = ifelse(pval2< boundary2, 1, 0 )
       
-      # pval2 = 2*(1-pnorm(Z.2))
-      # 
-      # T.2 = ifelse(pval2< boundary2, 1, 0 )
-      # 
-      # T.2 = ifelse(prop.test(x = c(p.21, p.22), n = c(n/2, n/2))$p.value<boundary2,
-      #              1, 0)
     }else{
       #rejected the null, found a difference in the interim analysis:
       p.21 = 0
@@ -107,6 +76,13 @@ trial.sim = function(p.t, p.c, n, S, simulationSettingName= NA,
 
 ######## Setting 1 #########
 #p1 = 0, p2 = .15, sig.level = 0.05, power = 0.80
+set.seed(16); test1 = ( trial.sim(p.t = 0.15, p.c = 0.0, n = 80, S = ceiling(S.power), 
+                    boundary1 = 0.01, boundary2 = 0.04 ))
+colMeans(test1[, c("reject", "overall.n")])
+
+set.seed(16); null1 = ( trial.sim(p.t = 0.0, p.c = 0.0, n = 80, S = ceiling(S.power), 
+                                  boundary1 = 0.01, boundary2 = 0.04 ))
+colMeans(null1[, c("reject", "overall.n")])
 
 
 ######## Setting 2 #########
@@ -117,15 +93,13 @@ power.prop.test(n= NULL, p1 = 0.05, p2 = 0.2,
 # initial n is 76 in each group, 152 total.
 # this 38 in each group at the interim, 76 total
 
-set.seed(16)
-
-test2 = ( trial.sim(p.t = 0.2, p.c = 0.05, n = 76, S = ceiling(S.power), 
-                    boundary1 = 0.005, boundary2 = 0.048 ))
+set.seed(16); test2 = ( trial.sim(p.t = 0.2, p.c = 0.05, n = 90, S = ceiling(S.power), 
+                    boundary1 = 0.01, boundary2 = 0.04 ))
 colMeans(test2[, c("reject", "overall.n")])
 #140
 
 set.seed(16); null2 = ( trial.sim(p.t = 0.05, p.c = 0.05, n = 76, S = ceiling(S.alpha), 
-                    boundary1 = 0.005, boundary2 = 0.048))
+                    boundary1 = 0.01, boundary2 = 0.04))
 colMeans(null2[, c("reject", "overall.n")])
 
 
@@ -139,12 +113,12 @@ power.prop.test(n= NULL, p1 = 0.1, p2 = 0.25,
 # initial n is 100 in each group, 200 total.
 # this 50 in each group at the interim, 100 total
 
-set.seed(16); test3 = ( trial.sim(p.t = 0.25, p.c = 0.1, n = 122, S = ceiling(S.power), 
-                    boundary1 = 0.005, boundary2 = 0.048 ))
+set.seed(16); test3 = ( trial.sim(p.t = 0.25, p.c = 0.1, n = 116, S = ceiling(S.power), 
+                    boundary1 = 0.01, boundary2 = 0.04 ))
 colMeans(test3[, c("reject", "overall.n")])
 
-set.seed(16); null3 = ( trial.sim(p.t = 0.1, p.c = 0.1, n = 122, S = ceiling(S.alpha), 
-                                  boundary1 = 0.005, boundary2 = 0.048 ))
+set.seed(16); null3 = ( trial.sim(p.t = 0.1, p.c = 0.1, n = 116, S = ceiling(S.alpha), 
+                                  boundary1 = 0.01, boundary2 = 0.04 ))
 colMeans(null3[, c("reject", "overall.n")])
 
 
@@ -156,13 +130,13 @@ power.prop.test(n= NULL, p1 = 0.15, p2 = 0.3,
                 alternative = "two.sided")
 # initial n is 120 in each group, 240 total.
 # this 60 in each group at the interim, 120 total
-set.seed(16); test4 = ( trial.sim(p.t = 0.3, p.c = 0.15, n = 120, S = ceiling(S.power), 
-                    boundary1 = 0.005, boundary2 = 0.048 ))
+set.seed(16); test4 = ( trial.sim(p.t = 0.3, p.c = 0.15, n = 138, S = ceiling(S.power), 
+                    boundary1 = 0.01, boundary2 = 0.04 ))
 colMeans(test4[, c("reject", "overall.n")])
 
 
-set.seed(16); null4 = ( trial.sim(p.t = 0.3, p.c = 0.3, n = 126, S = ceiling(S.alpha), 
-                                  boundary1 = 0.005, boundary2 = 0.048 ))
+set.seed(16); null4 = ( trial.sim(p.t = 0.3, p.c = 0.3, n = 138, S = ceiling(S.alpha), 
+                                  boundary1 = 0.01, boundary2 = 0.04 ))
 colMeans(null4[, c("reject", "overall.n")])
 
 
@@ -173,9 +147,9 @@ colMeans(null4[, c("reject", "overall.n")])
 # want to creat a graph that has the various powers and alpha levels
 # also varying n 
 
-pcDat = seq(from = 0.05, to = 0.15, by = 0.005)
+pcDat = seq(from = 0.0, to = 0.15, by = 0.03)
 
-nChoices = seq(from = 120, to = 128, by = 1); nChoices
+nChoices = seq(from = 122, to = 140, by = 2); nChoices
 
 
 finalDataFrame = as.data.frame(matrix(ncol = 6, nrow = length(pcDat)*length(nChoices)))
@@ -185,6 +159,7 @@ colnames(finalDataFrame) = c("propNull","expectedSampleAlt","expectedSampleNull"
 iter = 1
 set.seed(16)
 for (j in 1:length(nChoices)){
+  print(j)
   nSize = nChoices[j]
   for(i in 1:length(pcDat)){
     phat = pcDat[i]
@@ -203,7 +178,7 @@ for (j in 1:length(nChoices)){
 }
 
 
-
+# write.csv(finalDataFrame, "simulationResultsFinal.csv")
 # 
 # 
 library(ggplot2)
@@ -224,7 +199,7 @@ ggplot(data = finalDataFrame, aes(x = propNull))+
   scale_color_manual(values = colors)+
   facet_wrap(~trialSize)
 
-#ggsave("Errors.png")
+# ggsave("Errors.png")
 
 
 colors2 = c("Alternative" = "blue", "Null" = "orange")
