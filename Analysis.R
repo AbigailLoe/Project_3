@@ -173,9 +173,9 @@ colMeans(null4[, c("reject", "overall.n")])
 # want to creat a graph that has the various powers and alpha levels
 # also varying n 
 
-pcDat = seq(from = 0.05, to = 0.15, by = 0.01)
+pcDat = seq(from = 0.05, to = 0.15, by = 0.005)
 
-nChoices = seq(from = 120, to = 131, by = 1); nChoices
+nChoices = seq(from = 120, to = 128, by = 1); nChoices
 
 
 finalDataFrame = as.data.frame(matrix(ncol = 6, nrow = length(pcDat)*length(nChoices)))
@@ -190,12 +190,12 @@ for (j in 1:length(nChoices)){
     phat = pcDat[i]
     
     alt = trial.sim(p.t = phat+0.15, p.c = phat, n = nSize, S = ceiling(S.power), 
-                    boundary1 = 0.01, boundary2 = 0.05 )
+                    boundary1 = 0.01, boundary2 = 0.04 )
     finalDataFrame[iter, c("power", "expectedSampleAlt", "trialSize")]=  
       c(colMeans(alt[, c("reject", "overall.n")]), 2*nSize)
     
     pointNull = trial.sim(p.t = phat, p.c = phat, n = nSize, S = ceiling(S.alpha), 
-                          boundary1 = 0.01, boundary2 = 0.05)
+                          boundary1 = 0.01, boundary2 = 0.04)
     finalDataFrame[iter, c("propNull", "typeIError", "expectedSampleNull")] = 
       c(phat, colMeans(pointNull[,c("reject", "overall.n")]))
     iter = iter+1
