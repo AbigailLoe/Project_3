@@ -6,7 +6,7 @@
 # win.
 
 # ---- Determining S ------
-m = 0.02
+m = 0.01
 S.power = (1.96/m)^2 *.8*(1-.8); S.power
 S.alpha = (1.96/m)^2 *.95*(1-.95); S.alpha
 # implies we need at least 6147 montecarlo runs for power, and 1825 for alpha
@@ -173,9 +173,9 @@ colMeans(null4[, c("reject", "overall.n")])
 # want to creat a graph that has the various powers and alpha levels
 # also varying n 
 
-pcDat = seq(from = 0.05, to = 0.15, by = 0.005)
+pcDat = seq(from = 0.05, to = 0.15, by = 0.01)
 
-nChoices = seq(from = 110, to = 132, by = 4); nChoices
+nChoices = seq(from = 120, to = 131, by = 1); nChoices
 
 
 finalDataFrame = as.data.frame(matrix(ncol = 6, nrow = length(pcDat)*length(nChoices)))
