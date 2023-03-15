@@ -149,7 +149,7 @@ colMeans(null4[, c("reject", "overall.n")])
 
 pcDat = seq(from = 0.0, to = 0.15, by = 0.03)
 
-nChoices = seq(from = 122, to = 140, by = 2); nChoices
+nChoices = seq(from = 132, to = 140, by = 2); nChoices
 
 
 finalDataFrame = as.data.frame(matrix(ncol = 6, nrow = length(pcDat)*length(nChoices)))
@@ -165,12 +165,12 @@ for (j in 1:length(nChoices)){
     phat = pcDat[i]
     
     alt = trial.sim(p.t = phat+0.15, p.c = phat, n = nSize, S = ceiling(S.power), 
-                    boundary1 = 0.01, boundary2 = 0.04 )
+                    boundary1 = 0.01, boundary2 = 0.045)
     finalDataFrame[iter, c("power", "expectedSampleAlt", "trialSize")]=  
       c(colMeans(alt[, c("reject", "overall.n")]), 2*nSize)
     
     pointNull = trial.sim(p.t = phat, p.c = phat, n = nSize, S = ceiling(S.alpha), 
-                          boundary1 = 0.01, boundary2 = 0.04)
+                          boundary1 = 0.01, boundary2 = 0.045)
     finalDataFrame[iter, c("propNull", "typeIError", "expectedSampleNull")] = 
       c(phat, colMeans(pointNull[,c("reject", "overall.n")]))
     iter = iter+1
@@ -194,7 +194,7 @@ ggplot(data = finalDataFrame, aes(x = propNull))+
   labs(x = "Response P(MRB) under the Null",
        y = "Error Probability",
        color = "Error Types",
-       title = "Type I and Type 2 Errors",
+       title = "Empirical Errors",
        subtitle = "(Stratified by Total Sample Size)")+
   scale_color_manual(values = colors)+
   facet_wrap(~trialSize)
