@@ -32,7 +32,7 @@ trial.sim = function(p.t, p.c, n, S, simulationSettingName= NA,
     #get number of success for the treatment
     p.12 = sum(rbinom(n/2, 1, prob = p.t))
     
-    response.1 = matrix(c(p.11, n/2-p.11, p.12, n/2-p.12 ), nrow = 2)
+    response.1 = matrix(c(p.11,  p.12, n/2-p.11,n/2-p.12 ), nrow = 2)
     
     test.1 = fisher.test(response.1, alternative = "two.sided")
     Z.1 = test.1$estimate
@@ -47,7 +47,7 @@ trial.sim = function(p.t, p.c, n, S, simulationSettingName= NA,
       p.22 = p.12 + sum(rbinom(n/2, 1, prob = p.t))
       
       overall.n = 2*n
-      response.2 = matrix(c(p.21, n-p.21, p.22, n-p.22 ), nrow = 2)
+      response.2 = matrix(c(p.21, p.22, n-p.21,  n-p.22 ), nrow = 2)
       test.2 = fisher.test(response.2, alternative = "two.sided")
       
       Z.2 = test.2$estimate
@@ -130,13 +130,13 @@ power.prop.test(n= NULL, p1 = 0.15, p2 = 0.3,
                 alternative = "two.sided")
 # initial n is 120 in each group, 240 total.
 # this 60 in each group at the interim, 120 total
-set.seed(16); test4 = ( trial.sim(p.t = 0.3, p.c = 0.15, n = 138, S = ceiling(S.power), 
-                    boundary1 = 0.01, boundary2 = 0.04 ))
+set.seed(16); test4 = ( trial.sim(p.t = 0.3, p.c = 0.15, n = 134, S = ceiling(S.power), 
+                    boundary1 = 0.01, boundary2 = 0.045 ))
 colMeans(test4[, c("reject", "overall.n")])
 
 
-set.seed(16); null4 = ( trial.sim(p.t = 0.3, p.c = 0.3, n = 138, S = ceiling(S.alpha), 
-                                  boundary1 = 0.01, boundary2 = 0.04 ))
+set.seed(16); null4 = ( trial.sim(p.t = 0.3, p.c = 0.3, n = 134, S = ceiling(S.alpha), 
+                                  boundary1 = 0.01, boundary2 = 0.045 ))
 colMeans(null4[, c("reject", "overall.n")])
 
 
