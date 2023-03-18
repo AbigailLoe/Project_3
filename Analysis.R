@@ -149,12 +149,14 @@ colMeans(null4[, c("reject", "overall.n")])
 
 pcDat = seq(from = 0.0, to = 0.15, by = 0.03)
 
-nChoices = seq(from = 132, to = 140, by = 2); nChoices
+# nChoices = seq(from = 132, to = 140, by = 2); nChoices
 
+nChoices = c(132, 134, 136)
 
-finalDataFrame = as.data.frame(matrix(ncol = 6, nrow = length(pcDat)*length(nChoices)))
+finalDataFrame = as.data.frame(matrix(ncol = 10, nrow = length(pcDat)*length(nChoices)))
 colnames(finalDataFrame) = c("propNull","expectedSampleAlt","expectedSampleNull", 
-                             "typeIError", "power", "trialSize")
+                             "typeIError", "power", "trialSize", 
+                             "ESD-a", "ESD-B", "ESD-N0", "ESD-N1")
 
 iter = 1
 set.seed(16)
@@ -168,11 +170,15 @@ for (j in 1:length(nChoices)){
                     boundary1 = 0.01, boundary2 = 0.045)
     finalDataFrame[iter, c("power", "expectedSampleAlt", "trialSize")]=  
       c(colMeans(alt[, c("reject", "overall.n")]), 2*nSize)
+    finalDataFrame[iter, c("ESD-B", "ESD-N1")]= 
+      c(sd(alt[,"reject"]) , sd( alt[, "overall.n"]))
     
     pointNull = trial.sim(p.t = phat, p.c = phat, n = nSize, S = ceiling(S.alpha), 
                           boundary1 = 0.01, boundary2 = 0.045)
     finalDataFrame[iter, c("propNull", "typeIError", "expectedSampleNull")] = 
       c(phat, colMeans(pointNull[,c("reject", "overall.n")]))
+    finalDataFrame[iter, c("ESD-a", "ESD-N0")]= 
+      c(sd(pointNull[,"reject"]) , sd( pointNull[, "overall.n"]))
     iter = iter+1
   }
 }
@@ -180,6 +186,7 @@ for (j in 1:length(nChoices)){
 
 # write.csv(finalDataFrame, "simulationResultsFinal.csv")
 # 
+
 # 
 library(ggplot2)
 colors <- c("Type I" = "blue", "Type II" = "orange")
@@ -191,7 +198,7 @@ ggplot(data = finalDataFrame, aes(x = propNull))+
   geom_line(aes(y = typeIError, color = "Type I"))+
   geom_line(aes(y = 1-power, color = "Type II"))+
   geom_abline(intercept = 0.05, slope = 0, color = "blue", linetype = 3) +
-  labs(x = "Response P(MRB) under the Null",
+  labs(x = "Response P(MRD) under the Null",
        y = "Error Probability",
        color = "Error Types",
        title = "Empirical Errors",
@@ -206,7 +213,7 @@ colors2 = c("Alternative" = "blue", "Null" = "orange")
 ggplot(data = finalDataFrame, aes(x = propNull))+
   geom_line(aes(y = expectedSampleAlt, color = "Alternative"))+
   geom_line(aes(y = expectedSampleNull, color = "Null"))+
-  labs(x = "Response P(MRB) under the Null",
+  labs(x = "Response P(MRD) under the Null",
        y = "Average Number of People Enrolled",
        color = "Settings",
        title = "Expected Sample Sizes",
